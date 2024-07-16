@@ -1,4 +1,5 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+
 """
 Script that reads stdin line by line and computes metrics.
 """
@@ -57,6 +58,9 @@ def main():
         # Handle keyboard interrupt (Ctrl+C)
         print_statistics(total_file_size, status_code_counts)
         sys.exit(0)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
