@@ -2,66 +2,57 @@
 """
 Script reads `stdin` line by line and computes metrics.
 """
-import re
 import sys
 import signal
 
-# Regular expression pattern to parse the log lines
-log_pattern = re.compile(
-        r'^(\S+) - \[(.*?)\] "GET /projects/260 HTTP/1.1" (\d{3}) (\d+)$')
-
-# Dictionary to store the count of status codes
-status_counts = {}
+# Initialize the required variables
 total_file_size = 0
+status_codes = {
+        200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
 line_count = 0
 
-# List of valid status codes
-valid_status_codes = {200, 301, 400, 401, 403, 404, 405, 500}
 
-
-def print_summary():
-    """Print the current statistics."""
-    global total_file_size, status_counts
-    print("File size: {}".format(total_file_size))
-    for status in sorted(status_counts.keys()):
-        print("{}: {}".format(status, status_counts[status]))
+def print_stats():
+    """Print the accumulated statistics."""
+    print(f"File size: {total_file_size}")
+    for code in sorted(status_codes.keys()):
+        if status_codes[code] > 0:
+            print(f"{code}: {status_codes[code]}")
 
 
 def signal_handler(sig, frame):
-    """Handle the keyboard interruption signal (CTRL + C)."""
-    print_summary()
+    """Handle keyboard interruption (CTRL + C) and print statistics."""
+    print_stats()
     sys.exit(0)
 
 
+# Register the signal handler for CTRL + C
 signal.signal(signal.SIGINT, signal_handler)
 
 
-def read_input():
-    """Read input from stdin line by line."""
-    global line_count, total_file_size, status_counts
+try:
     for line in sys.stdin:
-        line = line.strip()
-        match = log_pattern.match(line)
-        if match:
-            ip, date, status, size = match.groups()
-            status = int(status)
-            size = int(size)
+        parts = line.split()
+        # Ensure the log format is correct
+        if len(parts) > 6 and parts[-2].isdigit() and parts[-1].isdigit():
+            status_code = int(parts[-2])
+            file_size = int(parts[-1])
 
             # Update the total file size
-            total_file_size += size
+            total_file_size += file_size
 
-            # Update the count for the status code
-            if status in valid_status_codes:
-                status_counts[status] = status_counts.get(status, 0) + 1
+            # Update the status code count if it's a valid code
+            if status_code in status_codes:
+                status_codes[status_code] += 1
 
-            # Increment the line count
+            # Increment the line counter
             line_count += 1
 
-            # Print the summary every 10 lines
+            # Print statistics every 10 lines
             if line_count % 10 == 0:
-                print_summary()
+                print_stats()
+except Exception as e:
+    print(f"Error: {e}", file=sys.stderr)
 
-
-if __name__ == "__main__":
-    read_input()
-    print_summary()  # Ensure the summary is printed at the end
+# Print the final statistics
+print_stats()
