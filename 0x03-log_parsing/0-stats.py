@@ -2,58 +2,66 @@
 """
 Script reads `stdin` line by line and computes metrics.
 """
+import re
 import sys
 import signal
 
-# Initialize metrics
+# Regular expression pattern to parse the log lines
+log_pattern = re.compile(
+        r'^(\S+) - \[(.*?)\] "GET /projects/260 HTTP/1.1" (\d{3}) (\d+)$')
+
+# Dictionary to store the count of status codes
+status_counts = {}
 total_file_size = 0
-status_code_counts = {
-        200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
 line_count = 0
 
+# List of valid status codes
+valid_status_codes = {200, 301, 400, 401, 403, 404, 405, 500}
 
-def print_stats():
-    """ Print the current statistics """
-    print(f"File size: {total_file_size}")
-    for status_code in sorted(status_code_counts.keys()):
-        if status_code_counts[status_code] > 0:
-            print(f"{status_code}: {status_code_counts[status_code]}")
+
+def print_summary():
+    """Print the current statistics."""
+    global total_file_size, status_counts
+    print("File size: {}".format(total_file_size))
+    for status in sorted(status_counts.keys()):
+        print("{}: {}".format(status, status_counts[status]))
 
 
 def signal_handler(sig, frame):
-    """ Handle the keyboard interrupt signal """
-    print_stats()
+    """Handle the keyboard interruption signal (CTRL + C)."""
+    print_summary()
     sys.exit(0)
 
 
-# Register the signal handler
 signal.signal(signal.SIGINT, signal_handler)
 
-# Read from standard input
-for line in sys.stdin:
-    try:
-        parts = line.split()
-        if len(parts) != 7:
-            continue
-        ip_address = parts[0]
-        date = parts[2] + ' ' + parts[3]
-        request = parts[4] + ' ' + parts[5] + ' ' + parts[6]
-        status_code = int(parts[7])
-        file_size = int(parts[8])
 
-        # Update metrics
-        total_file_size += file_size
-        if status_code in status_code_counts:
-            status_code_counts[status_code] += 1
+def read_input():
+    """Read input from stdin line by line."""
+    global line_count, total_file_size, status_counts
+    for line in sys.stdin:
+        line = line.strip()
+        match = log_pattern.match(line)
+        if match:
+            ip, date, status, size = match.groups()
+            status = int(status)
+            size = int(size)
 
-        line_count += 1
+            # Update the total file size
+            total_file_size += size
 
-        if line_count % 10 == 0:
-            print_stats()
+            # Update the count for the status code
+            if status in valid_status_codes:
+                status_counts[status] = status_counts.get(status, 0) + 1
 
-    except (ValueError, IndexError):
-        # Ignore lines that don't have the expected format
-        continue
+            # Increment the line count
+            line_count += 1
 
-# Print final stats if the script ends naturally
-print_stats()
+            # Print the summary every 10 lines
+            if line_count % 10 == 0:
+                print_summary()
+
+
+if __name__ == "__main__":
+    read_input()
+    print_summary()  # Ensure the summary is printed at the end
