@@ -2,21 +2,33 @@
 
 const request = require('request');
 
-const BASE_URL = 'https://swapi.dev/api/films/';
+const movieId = process.argv[2];
 
-// Function to fetch data from API
-function fetchData(url, callback) {
-  request(url, { json: true }, (error, response, body) => {
-    if (error) {
-      console.error('Error fetching data:', error);
-      callback(null);
-      return;
-    }
-    if (response.statusCode !== 200) {
-      console.error(`HTTP error! status: ${response.statusCode}`);
-      callback(null);
-      return;
-    }
-    callback(body);
-  });
+if (!movieId) {
+  console.error('Usage: ./0-starwars_characters.js <movie_id>');
+  process.exit(1);
 }
+
+const url = `https://swapi.dev/api/films/${movieId}/`;
+
+request(url, (error, response, body) => {
+  if (error) {
+    console.error('Error fetching movie data:', error);
+    process.exit(1);
+  }
+
+  const data = JSON.parse(body);
+  const characterUrls = data.characters;
+
+  characterUrls.forEach(characterUrl => {
+    request(characterUrl, (error, response, body) => {
+      if (error) {
+        console.error('Error fetching character data:', error);
+        return;
+      }
+
+      const characterData = JSON.parse(body);
+      console.log(characterData.name);
+    });
+  });
+});
