@@ -11,7 +11,8 @@ This script fetches and displays the names of Star Wars characters based on the 
 
 ## Setup
 
-- Make sure Node.js 10 is installed:
+Make sure Node.js 10 is installed:
+
    ```bash
    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
    sudo apt-get install -y nodejs
