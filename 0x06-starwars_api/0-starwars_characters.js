@@ -1,34 +1,39 @@
 #!/usr/bin/node
-
 const request = require('request');
-
 const movieId = process.argv[2];
+const movieUrl = `https://swapi-api.alx-tools.com/api/films/${movieId}/`;
 
-if (!movieId) {
-  console.error('Usage: ./0-starwars_characters.js <movie_id>');
-  process.exit(1);
-}
-
-const url = `https://swapi.dev/api/films/${movieId}/`;
-
-request(url, (error, response, body) => {
-  if (error) {
-    console.error('Error fetching movie data:', error);
-    process.exit(1);
+request(movieUrl, (error, response, body) => {
+  if (error || response.statusCode !== 200) {
+    console.error(`Error fetching film data: ${error || response.statusCode}`);
+    return;
   }
 
-  const data = JSON.parse(body);
-  const characterUrls = data.characters;
+  const film = JSON.parse(body);
+  const characterUrls = film.characters;
 
-  characterUrls.forEach(characterUrl => {
-    request(characterUrl, (error, response, body) => {
-      if (error) {
-        console.error('Error fetching character data:', error);
-        return;
-      }
-
-      const characterData = JSON.parse(body);
-      console.log(characterData.name);
+  // Create a list of promises to fetch character data
+  const characterPromises = characterUrls.map((characterUrl) => {
+    return new Promise((resolve, reject) => {
+      request(characterUrl, (error, response, body) => {
+        if (error || response.statusCode !== 200) {
+          reject(new Error(`Error fetching character data from ${characterUrl}: ${error || response.statusCode}`));
+        } else {
+          const character = JSON.parse(body);
+          resolve(character.name);
+        }
+      });
     });
   });
+
+  // Once all promises resolve, print the character names
+  Promise.all(characterPromises)
+    .then((characterNames) => {
+      characterNames.forEach((name) => {
+        console.log(name);
+      });
+    })
+    .catch((error) => {
+      console.error(error.message);
+    });
 });
