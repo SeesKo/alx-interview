@@ -11,3 +11,5 @@ This project involves implementing an algorithm to rotate an `n x n` 2D matrix b
 - `pycodestyle` 2.8.0
 - No importation of any module
 - All files must be executable
+
+This project covers basic operations on lists in Python, matrix manipulation, and understanding of in-place algorithms.
