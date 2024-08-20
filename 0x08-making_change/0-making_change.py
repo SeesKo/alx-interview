@@ -6,20 +6,21 @@ Determines the fewest number of coins needed.
 
 def makeChange(coins, total):
     """
-    Determines the fewest number of coins
-    needed to meet a given amount total.
+    Returns the fewest number of coins
+    needed to meet the total amount.
     """
     if total <= 0:
         return 0
 
-    # Initialize the dp array with infinity
-    dp = [float('inf')] * (total + 1)
-    dp[0] = 0
+    # Sort coins in descending order for the greedy approach
+    coins = sorted(coins, reverse=True)
+    count = 0
 
-    # Update dp array for each coin
     for coin in coins:
-        for amount in range(coin, total + 1):
-            if dp[amount - coin] != float('inf'):
-                dp[amount] = min(dp[amount], dp[amount - coin] + 1)
+        if total == 0:
+            break
+        if coin <= total:
+            count += total // coin
+            total %= coin
 
-    return dp[total] if dp[total] != float('inf') else -1
+    return count if total == 0 else -1
