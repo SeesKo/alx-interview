@@ -12,7 +12,7 @@ def makeChange(coins, total):
         return 0
 
     # Initialize list to store the minimum coins needed for each amount
-    dp = [float('inf')] * (total + 1)
+    dp = [total + 1] * (total + 1)
     dp[0] = 0
 
     # Iterate through each coin and update the dp list
@@ -22,4 +22,4 @@ def makeChange(coins, total):
 
     # If dp[total] is still infinity,
     # then it's not possible to make that amount
-    return dp[total] if dp[total] != float('inf') else -1
+    return dp[total] if dp[total] != total + 1 else -1
