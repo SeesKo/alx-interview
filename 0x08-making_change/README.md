@@ -16,9 +16,9 @@ The Greedy Algorithm makes the most immediate optimal choice at each step, attem
 
 **Steps:**
 
-    1. Sort the coin denominations in descending order.
-    2. Start with the largest denomination and subtract it from the amount until the remainder is smaller than the denomination.
-    3. Move to the next largest denomination and repeat until the amount is zero.
+1. Sort the coin denominations in descending order.
+2. Start with the largest denomination and subtract it from the amount until the remainder is smaller than the denomination.
+3. Move to the next largest denomination and repeat until the amount is zero.
 
 **Limitations:** The Greedy Algorithm may fail to find the minimum number of coins for some coin denominations.
 
@@ -28,9 +28,9 @@ Dynamic Programming (DP) is used to find the minimum number of coins required fo
 
 **Steps:**
 
-    1. Initialize a list dp where dp[i] represents the minimum number of coins needed to make up amount i.
-    2. Iterate through each coin, updating the dp list by considering the minimum coins needed for each amount.
-    3. The solution for the original amount will be found at dp[amount].
+1. Initialize a list dp where dp[i] represents the minimum number of coins needed to make up amount i.
+2. Iterate through each coin, updating the dp list by considering the minimum coins needed for each amount.
+3. The solution for the original amount will be found at dp[amount].
 
 **Advantages:** This approach guarantees an optimal solution and handles all possible coin sets.
 
